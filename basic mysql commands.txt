@@ -1,0 +1,283 @@
+(**) extra points ==>
+------------------------------------------------------------------------------
+
+<--SHOW DATA BASES-->
+
+mysql> show databases;
+
+<--CREATE DATA BASES-->
+
+mysql> create database sql_prac;
+OR
+mysql> create database if not exists sql_prac;
+
+<--DROP DATA BASES-->
+
+mysql> drop databse sql_prac;
+OR
+mysql> drop database if exists sql_prac;
+
+
+<--CREATE TABLES USING CONSTRAINES-->
+
+mysql> create table if not exists student(
+    -> student_id int(5) primary key not null,
+    -> student_name varchar(200) not null,
+    -> student_no varchar(10)
+    -> );
+
+mysql> create table if not exists subject(
+    -> subject_id varchar(50) not null primary key,
+    -> subject varchar(50) not null
+    -> );
+
+mysql> CREATE TABLE IF NOT EXISTS student_marks (
+    ->     student_id INT(5) NOT NULL,
+    ->     subject_id VARCHAR(50) NOT NULL,
+    ->     marks INT(3) NOT NULL,
+    ->     PRIMARY KEY (student_id, subject_id),
+    ->     FOREIGN KEY (student_id) REFERENCES student(student_id),
+    ->     FOREIGN KEY (subject_id) REFERENCES subject(subject_id)
+    -> );
+
+<--GET TABLE DESCRIBE-->
+
+mysql> desc student;
+
+mysql> desc student_marks;
+
+mysql> desc subject;
+
+<--SHOW TABLES-->
+
+mysql> show tables;
+
+<--DROP TABLES-->
+
+mysql> drop table if exists student;
+OR
+mysql> drop table student;
+
+<--INSERT DATA-->
+
+mysql> insert into student values(1,'saman','077123456');
+OR
+mysql> insert into student values(2,'saman','077123456'),(3,'kamal','077123256');
+OR
+mysql> insert into student(student_id,student_name,student_no)values(4,'nimal','0123456702');
+OR
+mysql> insert into student(student_id,student_name,student_no)values(5,'sunimal','0123456702'),(6,'sarath','0215156702');
+OR
+mysql> insert into student(student_name,student_id,student_no)values('renuka',7,'0123444402');
+
+** IF TABLE COLUMN IS AUTO INCRIMENT,IF YOU ABLE TO PUT VALUES IN TO THE FIELD DIELF AUTO GENARATE THE NEXT VALUE
+mysql> insert into student(student_name,student_no)values('nimal','0123456702');
+
+** INT DATA TYPE IGNORE 0 VALUES IN FRUNT OF THE VALUE(077121341==>77121341) 
+
+** CONSIDER THE student TABLE null COLUNMS CAN ACCESS FOLOWING WAYS
+mysql> insert into student(student_id,student_name,student_no)values(4,'nimal',null);
+mysql> insert into student(student_id,student_name)values(4,'nimal');
+
+<--SELECT DATA-->
+
+mysql> select * from student;
+OR
+** COLUNM LIST NOT REQUERED TO SELECT
+mysql> select student_id,student_no from student;
+
+
+<-WHERE CLOSE(=,OR,AND)->
+
+mysql> select * from student WHERE student_name='saman';
+mysql> select * from student WHERE student_name='saman'and student_id=1;
+mysql> select * from student WHERE student_name='saman'and (student_id=1 or student_id=2);
+
+<--UPDATE DATA-->//ON UPDATE CASCADE not mention here
+
+**ON UPDATE CASCADE syntax here
+CREATE TABLE parent (
+    id INT PRIMARY KEY
+);
+
+CREATE TABLE child (
+    id INT PRIMARY KEY,
+    parent_id INT,
+    FOREIGN KEY (parent_id) REFERENCES parent(id) ON UPDATE CASCADE
+);
+
+
+mysql>  update student
+    ->  set student_name = 'kamal'
+    ->  where student_id=1;
+
+mysql> update student
+    -> set student_name='ranjan' , student_no ='10023142'
+    -> where student_id = 7;
+
+** clear data using update query
+mysql> update student
+    -> set student_no=null
+    -> where student_id=1;
+
+<--DELETE DATA-->
+
+**ON DELETE CASCADE(WHEN TRY TO DELETE PARENT TABALES'S DATA LINKED WITH CHILD TABLE DATA PROGRAME ALLOW TO DELETE IT)
+**DEFAULTY ABOVE CONDITION CAN NOT ALLOW MYSQL(THERE FOR CAN NOT DELETE PARANT DATA LINKE WITH CHILED TABLE)
+**According to student,subject,subject_marks tables can not delete in student and subject table data because it was reference with student_marks table
+
++------------+--------------+------------+
+| student_id | student_name | student_no |
++------------+--------------+------------+
+|          1 | kamal        | NULL       |
+|          2 | saman        | 077123456  |
+|          3 | kamal        | 077123256  |
+|          4 | nimal        | 0123456702 |
+|          5 | sunimal      | 0123456702 |
+|          6 | sarath       | 0215156702 |
+|          7 | ranjan       | 10023142   |
++------------+--------------+------------+
+
++--------------------+--------------------+
+| subject_id         | subject            |
++--------------------+--------------------+
+| Art                | Art                |
+| Biology            | Biology            |
+| Chemistry          | Chemistry          |
+| Computer_Science   | Computer Science   |
+| Economics          | Economics          |
+| English            | English Language   |
+| Foreign_Language   | Foreign Language   |
+| Geography          | Geography          |
+| History            | History            |
+| Math               | Mathematics        |
+| Music              | Music              |
+| Physical_Education | Physical Education |
+| Physics            | Physics            |
+| Science            | Science            |
+| Social_Studies     | Social Studies     |
++--------------------+--------------------+
+
++------------+------------------+-------+
+| student_id | subject_id       | marks |
++------------+------------------+-------+
+|          1 | Chemistry        |    89 |
+|          1 | Math             |    95 |
+|          2 | Biology          |    80 |
+|          2 | English          |    88 |
+|          3 | History          |    78 |
+|          3 | Social_Studies   |    85 |
+|          4 | Science          |    92 |
+|          5 | Computer_Science |    85 |
+|          6 | Geography        |    77 |
+|          7 | Physics          |    90 |
++------------+------------------+-------+
+
+**Add new value to the student table and try to delete it raw.when try to delete it mysql allow to delete it because it was not link with child tables
+mysql> insert into student (student_id,student_name) values(8,'chamath');
+mysql> delete from  student where student_id=8;
+Query OK, 1 row affected (0.14 sec)
+
+**when try to delete liked raw with its child table mysql not allows to delete it
+mysql> delete from  student where student_id=5;
+ERROR 1451 (23000): Cannot delete or update a parent row: a foreign key constraint fails (`sql_prac`.`student_marks`, CONSTRAINT `student_marks_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`))
+
+**how to fix this(ON DELETE CASCADE)
+**rearrange the student_marks table to include the ON DELETE CASCADE command like this
+
+
+mysql> CREATE TABLE IF NOT EXISTS student_marks (
+    ->     student_id INT(5) NOT NULL,
+    ->     subject_id VARCHAR(50) NOT NULL,
+    ->     marks INT(3) NOT NULL,
+    ->     PRIMARY KEY (student_id, subject_id),
+    ->     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
+    ->     FOREIGN KEY (subject_id) REFERENCES subject(subject_id)
+    -> );
+
+**now mysql allow to delete student table data.when try to delete student table data its reference rows automaticaly delete from student_marks table
+
+mysql> delete from  student where student_id=5;
+Query OK, 1 row affected (0.07 sec)
+
++------------+--------------+------------+
+| student_id | student_name | student_no |
++------------+--------------+------------+
+|          1 | kamal        | NULL       |
+|          2 | saman        | 077123456  |
+|          3 | kamal        | 077123256  |
+|          4 | nimal        | 0123456702 |
+|          6 | sarath       | 0215156702 |
+|          7 | ranjan       | 10023142   |
++------------+--------------+------------+
+
++------------+----------------+-------+
+| student_id | subject_id     | marks |
++------------+----------------+-------+
+|          1 | Chemistry      |    89 |
+|          1 | Math           |    95 |
+|          2 | Biology        |    80 |
+|          2 | English        |    88 |
+|          3 | History        |    78 |
+|          3 | Social_Studies |    85 |
+|          4 | Science        |    92 |
+|          6 | Geography      |    77 |
+|          7 | Physics        |    90 |
++------------+----------------+-------+
+
+**student_id =5 th raw delete from student_marks table when delete it from student table
+
+<--Aliases IN MYSQL-->
+
+**change the name to display table(in using join query) or colunm using AS keyword
+
+mysql> select student_id,marks from student_marks;
++------------+-------+
+| student_id | marks |
++------------+-------+
+|          1 |    89 |
+|          1 |    95 |
+|          2 |    80 |
+|          2 |    88 |
+|          3 |    78 |
+|          3 |    85 |
+|          4 |    92 |
+|          6 |    77 |
+|          7 |    90 |
++------------+-------+
+9 rows in set (0.00 sec)
+
+mysql> select student_id,marks as student_marks from student_marks;
++------------+---------------+
+| student_id | student_marks |
++------------+---------------+
+|          1 |            89 |
+|          1 |            95 |
+|          2 |            80 |
+|          2 |            88 |
+|          3 |            78 |
+|          3 |            85 |
+|          4 |            92 |
+|          6 |            77 |
+|          7 |            90 |
++------------+---------------+
+
+** if youwant to set as the student marks use '' to do it like this ==> 'student marks'
+mysql> select student_id,marks as 'student marks' from student_marks;
+
++------------+---------------+
+| student_id | student marks |
++------------+---------------+
+|          1 |            89 |
+|          1 |            95 |
+|          2 |            80 |
+|          2 |            88 |
+|          3 |            78 |
+|          3 |            85 |
+|          4 |            92 |
+|          6 |            77 |
+|          7 |            90 |
++------------+---------------+
+
+<--JOIN IN MYSQL(inner,left,right,cross)-->
+
